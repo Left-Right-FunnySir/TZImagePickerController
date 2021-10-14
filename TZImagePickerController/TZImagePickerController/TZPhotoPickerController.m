@@ -15,7 +15,6 @@
 #import "TZImageManager.h"
 #import "TZVideoPlayerController.h"
 #import "TZGifPhotoPreviewController.h"
-#import "TZLocationManager.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "TZImageRequestOperation.h"
 
@@ -42,7 +41,6 @@
 @property (nonatomic, strong) UILabel *noDataLabel;
 @property (strong, nonatomic) UICollectionViewFlowLayout *layout;
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
-@property (strong, nonatomic) CLLocation *location;
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, assign) BOOL isSavingMedia;
 @property (nonatomic, assign) BOOL isFetchingMedia;
@@ -750,16 +748,6 @@ static CGFloat itemMargin = 5;
 - (void)pushImagePickerController {
     // 提前定位
     TZImagePickerController *tzImagePickerVc = (TZImagePickerController *)self.navigationController;
-    if (tzImagePickerVc.allowCameraLocation) {
-        __weak typeof(self) weakSelf = self;
-        [[TZLocationManager manager] startLocationWithSuccessBlock:^(NSArray<CLLocation *> *locations) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            strongSelf.location = [locations firstObject];
-        } failureBlock:^(NSError *error) {
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            strongSelf.location = nil;
-        }];
-    }
     
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
     if ([UIImagePickerController isSourceTypeAvailable: sourceType]) {
@@ -916,7 +904,7 @@ static CGFloat itemMargin = 5;
         NSDictionary *meta = [info objectForKey:UIImagePickerControllerMediaMetadata];
         if (photo) {
             self.isSavingMedia = YES;
-            [[TZImageManager manager] savePhotoWithImage:photo meta:meta location:self.location completion:^(PHAsset *asset, NSError *error){
+            [[TZImageManager manager] savePhotoWithImage:photo meta:meta completion:^(PHAsset *asset, NSError *error){
                 self.isSavingMedia = NO;
                 if (!error && asset) {
                     [self addPHAsset:asset];
@@ -925,7 +913,6 @@ static CGFloat itemMargin = 5;
                     [tzImagePickerVc hideProgressHUD];
                 }
             }];
-            self.location = nil;
         }
     } else if ([type isEqualToString:@"public.movie"]) {
         TZImagePickerController *imagePickerVc = (TZImagePickerController *)self.navigationController;
@@ -933,7 +920,7 @@ static CGFloat itemMargin = 5;
         NSURL *videoUrl = [info objectForKey:UIImagePickerControllerMediaURL];
         if (videoUrl) {
             self.isSavingMedia = YES;
-            [[TZImageManager manager] saveVideoWithUrl:videoUrl location:self.location completion:^(PHAsset *asset, NSError *error) {
+            [[TZImageManager manager] saveVideoWithUrl:videoUrl completion:^(PHAsset *asset, NSError *error) {
                 self.isSavingMedia = NO;
                 if (!error && asset) {
                     [self addPHAsset:asset];
@@ -942,7 +929,6 @@ static CGFloat itemMargin = 5;
                     [tzImagePickerVc hideProgressHUD];
                 }
             }];
-            self.location = nil;
         }
     }
 }

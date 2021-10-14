@@ -16,7 +16,6 @@
 #import "TZVideoPlayerController.h"
 #import "TZPhotoPreviewController.h"
 #import "TZGifPhotoPreviewController.h"
-#import "TZLocationManager.h"
 #import "TZAssetCell.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "FLAnimatedImage.h"
@@ -35,7 +34,6 @@
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
 @property (nonatomic, strong) UICollectionView *collectionView;
 @property (strong, nonatomic) LxGridViewFlowLayout *layout;
-@property (strong, nonatomic) CLLocation *location;
 
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 
@@ -388,9 +386,6 @@
     // 设置是否显示图片序号
     imagePickerVc.showSelectedIndex = self.showSelectedIndexSwitch.isOn;
     
-    // 设置拍照时是否需要定位，仅对选择器内部拍照有效，外部拍照的，请拷贝demo时手动把pushImagePickerController里定位方法的调用删掉
-    // imagePickerVc.allowCameraLocation = NO;
-    
     // 自定义gif播放方案
     [[TZImagePickerConfig sharedInstance] setGifImagePlayBlock:^(TZPhotoPreviewView *view, UIImageView *imageView, NSData *gifData, NSDictionary *info) {
         FLAnimatedImage *animatedImage = [FLAnimatedImage animatedImageWithGIFData:gifData];
@@ -476,16 +471,6 @@
 
 // 调用相机
 - (void)pushImagePickerController {
-    // 提前定位
-    __weak typeof(self) weakSelf = self;
-    [[TZLocationManager manager] startLocationWithSuccessBlock:^(NSArray<CLLocation *> *locations) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        strongSelf.location = [locations firstObject];
-    } failureBlock:^(NSError *error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        strongSelf.location = nil;
-    }];
-    
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
     if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
         self.imagePickerVc.sourceType = sourceType;

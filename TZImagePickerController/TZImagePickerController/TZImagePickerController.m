@@ -296,7 +296,6 @@
     self.needFixComposition = NO;
     self.statusBarStyle = UIStatusBarStyleLightContent;
     self.cannotSelectLayerColor = [[UIColor whiteColor] colorWithAlphaComponent:0.8];
-    self.allowCameraLocation = YES;
     self.presetName = AVAssetExportPresetMediumQuality;
     self.maxCropVideoDuration = 30;
     
