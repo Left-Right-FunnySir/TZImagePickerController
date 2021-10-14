@@ -541,7 +541,7 @@ static dispatch_once_t onceToken;
     }];
 }
 
-- (void)savePhotoWithImage:(UIImage *)image meta:(NSDictionary *)meta location:(CLLocation *)location completion:(void (^)(PHAsset *asset, NSError *error))completion {
+- (void)savePhotoWithImage:(UIImage *)image meta:(NSDictionary *)meta completion:(void (^)(PHAsset *asset, NSError *error))completion {
     NSData *imageData = UIImageJPEGRepresentation(image, 1.0f);
     CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)imageData, NULL);
     NSDateFormatter *formater = [[NSDateFormatter alloc] init];
@@ -558,9 +558,6 @@ static dispatch_once_t onceToken;
     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
         PHAssetChangeRequest *request = [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:tmpURL];
         localIdentifier = request.placeholderForCreatedAsset.localIdentifier;
-        if (location) {
-            request.location = location;
-        }
         request.creationDate = [NSDate date];
     } completionHandler:^(BOOL success, NSError *error) {
         [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
@@ -593,19 +590,11 @@ static dispatch_once_t onceToken;
 }
 
 #pragma mark - Save video
-
 - (void)saveVideoWithUrl:(NSURL *)url completion:(void (^)(PHAsset *asset, NSError *error))completion {
-    [self saveVideoWithUrl:url location:nil completion:completion];
-}
-
-- (void)saveVideoWithUrl:(NSURL *)url location:(CLLocation *)location completion:(void (^)(PHAsset *asset, NSError *error))completion {
     __block NSString *localIdentifier = nil;
     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
         PHAssetChangeRequest *request = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:url];
         localIdentifier = request.placeholderForCreatedAsset.localIdentifier;
-        if (location) {
-            request.location = location;
-        }
         request.creationDate = [NSDate date];
     } completionHandler:^(BOOL success, NSError *error) {
         dispatch_async(dispatch_get_main_queue(), ^{
